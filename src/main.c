@@ -280,7 +280,8 @@ int main() {
 	// TODO the quickdrop code makes the display
 	// behave weird
 
-	int dropspeed = 7;
+	// how often the piece should drop, in ticks
+	int dropspeed = 10;
 	piece pieces[7] = {p_i, p_o, p_t, p_s, p_z, p_j, p_l};
 	piece* pp = pieces;
 	piece piece = *pp;
@@ -305,8 +306,9 @@ int main() {
 		}
 
 		printboard(width, height, board);	
+		// 20 ticks per secound
 		if (!quickdrop)
-			usleep(1000000 / dropspeed);
+			usleep(1000000 / 20);
 		//sleep(1);
 
 		bool piece_stoped = false;
