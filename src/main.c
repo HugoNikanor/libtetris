@@ -1,4 +1,5 @@
 #include <stdlib.h>
+
 #include <stdio.h>
 #include <unistd.h>
 
@@ -21,6 +22,8 @@ typedef unsigned char tile;
 typedef struct {
 	tiles color;
 	tile tile;
+	unsigned rotation : 2;
+	point bounds;
 	point* shape; // list
 } piece;
 
@@ -48,22 +51,28 @@ bool in_piece(point p, piece piece) {
 	return false;
 }
 
-void put_bar(int width) {
-}
+void printboard(int width, int height, const tile board[][COLUMNS]) { //{{{
 // ┌─┐
 // │ │
 // └─┘
-void printboard(int width, int height, const tile board[][COLUMNS]) {
 	puts("\x1B[H");
 
+	/*
 	putchar('+');
 	for (int x = 0; x < width; x++)
 		putchar('-');
 	putchar('+');
 	putchar(0xA);
+	*/
+	printf("┌");
+	for (int x = 0; x < width; x++)
+		printf("─");
+	printf("┐");
+	putchar(0xA);
 
 	for (int y = 0; y < height; y++) {
-		putchar('|');
+		//putchar('|');
+		printf("│");
 		for (int x = 0; x < width; x++) {
 			switch (board[y][x]) {
 				case GREEN:
@@ -93,14 +102,43 @@ void printboard(int width, int height, const tile board[][COLUMNS]) {
 					//putchar(board[y][x]);
 			}
 		}
-		putchar('|');
+		//putchar('|');
+		printf("│");
 		putchar(0xA);
 	}
+	/*
 	putchar('+');
 	for (int x = 0; x < width; x++)
 		putchar('-');
 	putchar('+');
 	putchar(0xA);
+	*/
+	printf("└");
+	for (int x = 0; x < width; x++)
+		printf("─");
+	printf("┘");
+	putchar(0xA);
+} //}}}
+
+void rotatePiece(piece* p) {
+	for (int i = 0; i < 4; i++) {
+		/*
+		int x = p->shape[i].x;
+		p->shape[i].x = p->shape[i].y;
+		p->shape[i].y = x;
+		if (p->rotation & 1 == 1) {
+			p->shape[i].y = p->bounds.y - p->shape[i].y;
+		}
+		*/
+		int x = p->shape[i].x;
+		p->shape[i].x = p->shape[i].y;
+		p->shape[i].y = x;
+
+		if (p->rotation & 1 == 1) {
+			p->shape[i].x = p->bounds.x - p->shape[i].x;
+		}
+
+	}
 }
 
 int main() {
@@ -122,6 +160,8 @@ int main() {
 	piece p_i = {
 		.color = CYAN,
 		.tile = 'I',
+		.bounds = {3},
+		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
 	};
 	point i_shape[4] = {
@@ -136,6 +176,8 @@ int main() {
 	piece p_o = {
 		.color = YELLOW,
 		.tile = 'O',
+		.bounds = {1},
+		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
 	};
 	point o_shape[4] = {
@@ -150,6 +192,8 @@ int main() {
 	piece p_t = {
 		.color = MAGENTA,
 		.tile = 'T',
+		.bounds = {2},
+		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
 	};
 	point t_shape[4] = {
@@ -163,6 +207,8 @@ int main() {
 	piece p_s = {
 		.color = GREEN,
 		.tile = 'S',
+		.bounds = {2},
+		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
 	};
 	point s_shape[4] = {
@@ -176,6 +222,8 @@ int main() {
 	piece p_z = {
 		.color = RED,
 		.tile = 'Z',
+		.bounds = {2},
+		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
 	};
 	point z_shape[4] = {
@@ -189,6 +237,8 @@ int main() {
 	piece p_j = {
 		.color = BLUE,
 		.tile = 'J',
+		.bounds = {2},
+		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
 	};
 	point j_shape[4] = {
@@ -202,6 +252,7 @@ int main() {
 	piece p_l = {
 		.color = ORANGE,
 		.tile = 'L',
+		.bounds = {2},
 		.shape = malloc(sizeof(point) * 4)
 	};
 	point l_shape[4] = {
@@ -253,8 +304,8 @@ int main() {
 			if (c == 'l') ++x;
 			if (c == 'h') --x;
 			if (c == ' ') quickdrop = true;
+			if (c == 'r') { ++piece.rotation; rotatePiece(&piece); }
 		}
-		//if (c == 'e') goto cleanup;
 
 		for (int i = 0; i < 4; i++) {
 			point p = piece.shape[i];
@@ -283,6 +334,7 @@ int main() {
 			x = 1;
 			piece = *(++pp);
 			quickdrop = false;
+			//counter.c = 0;
 			continue;
 		}
 
