@@ -128,7 +128,7 @@ void rotatePiece(piece* p) {
 		p->shape[i].x = p->shape[i].y;
 		p->shape[i].y = x;
 
-		if (p->rotation & 1 == 1) {
+		if (++p->rotation & 1 == 1) {
 			p->shape[i].x = p->bounds - p->shape[i].x;
 		}
 	}
@@ -297,7 +297,7 @@ int main() {
 			if (c == 'l') ++x;
 			if (c == 'h') --x;
 			if (c == ' ') quickdrop = true;
-			if (c == 'r') { ++piece.rotation; rotatePiece(&piece); }
+			if (c == 'r') rotatePiece(&piece);
 		}
 
 		for (int i = 0; i < 4; i++) {
