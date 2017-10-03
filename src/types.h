@@ -18,4 +18,6 @@ typedef struct {
 	point* shape; // list
 } piece;
 
+typedef enum { LEFT, RIGHT } direction;
+
 #endif // TYPES_H

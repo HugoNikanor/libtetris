@@ -37,6 +37,38 @@ void rotate_piece(piece* p) {
 	}
 }
 
+void move(direction dir,
+		int width,
+		color board[][width],
+		point* pos,
+		piece* piece) {
+
+	int d;
+	if (dir == LEFT)
+		d = -1;
+	else
+		d = 1;
+
+
+	bool ok = true;
+	for (int i = 0; i < 4; i++) {
+		point p = {
+			.x = piece->shape[i].x + pos->x + d,
+			.y = piece->shape[i].y + pos->y
+		};
+
+		if (p.x < 0
+				|| p.x >= width
+				|| (board[p.y][p.x] != EMPTY && !in_piece(p, piece))) {
+			ok = false;
+			break;
+		}
+	}
+
+	if (ok)
+		pos->x += d;
+
+}
 
 void game_loop() {
 	// board setup {{{1
@@ -178,8 +210,8 @@ void game_loop() {
 
 		input = getchar();
 
-		if (input == 'l') ++pos.x;
-		if (input == 'h') --pos.x;
+		if (input == 'l') move(RIGHT, width, board, &pos, piece);
+		if (input == 'h') move(LEFT,  width, board, &pos, piece);
 		if (input == ' ') quickdrop = true;
 		if (input == 'r') rotate_piece(piece);
 
