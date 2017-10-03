@@ -123,14 +123,13 @@ void printboard(int width, int height, const tile board[][COLUMNS]) { //{{{
 } //}}}
 
 void rotatePiece(piece* p) {
+	p->rotation++;
 	for (int i = 0; i < 4; i++) {
 		int x = p->shape[i].x;
 		p->shape[i].x = p->shape[i].y;
 		p->shape[i].y = x;
 
-		if (++p->rotation & 1 == 1) {
-			p->shape[i].x = p->bounds - p->shape[i].x;
-		}
+		p->shape[i].x = p->bounds - p->shape[i].x;
 	}
 }
 
@@ -158,10 +157,10 @@ int main() {
 		.shape = malloc(sizeof(point) * 4)
 	};
 	point i_shape[4] = {
-		{.x = 1, .y = 0},
+		{.x = 0, .y = 1},
 		{.x = 1, .y = 1},
-		{.x = 1, .y = 2},
-		{.x = 1, .y = 3},
+		{.x = 2, .y = 1},
+		{.x = 3, .y = 1},
 	};
 	p_i.shape = i_shape;
 
@@ -235,10 +234,10 @@ int main() {
 		.shape = malloc(sizeof(point) * 4)
 	};
 	point j_shape[4] = {
-		{.x = 1, .y = 0},
-		{.x = 1, .y = 1},
+		{.x = 2, .y = 0},
+		{.x = 2, .y = 1},
+		{.x = 2, .y = 2},
 		{.x = 1, .y = 2},
-		{.x = 0, .y = 2},
 	};
 	p_j.shape = j_shape;
 	// L :: Orange {{{2
