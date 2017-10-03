@@ -2,10 +2,13 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <stdbool.h>
 
+// for direct input
 // termios, TCSANOW, ECHO, ICANON
 #include <termios.h>
 
+// for non blocking input
 #include <fcntl.h>
 
 typedef struct {
@@ -17,19 +20,18 @@ typedef enum
 	{ EMPTY, GREEN, RED, ORANGE, YELLOW, BLUE, MAGENTA, CYAN }
 color;
 
-typedef unsigned char tile; 
-
 typedef struct {
 	color color;
-	// TODO remove this
-	tile tile;
 	unsigned rotation : 2;
 	// the size of the bounding box of the piece - 1
 	int bounds;
 	point* shape; // list
 } piece;
 
-typedef enum { false, true } bool;
+/*
+ * You could add an ASCII mode by instetad setting the
+ * background color. And then printing spaces.
+ */
 
 #define GRNSTR "\x1B[1;32m"
 #define REDSTR "\x1B[1;31m"
@@ -41,31 +43,19 @@ typedef enum { false, true } bool;
 
 #define DEFSTR "\x1B[m"
 
-#define ROWS 20
-#define COLUMNS 8
-
-bool in_piece(point p, piece piece) {
+bool in_piece(point p, piece* piece) {
 	for (int i = 0; i < 4; i++) {
-		point pp = piece.shape[i];
+		point pp = piece->shape[i];
 		if (p.x == pp.x && p.y == pp.y)
 			return true;
 	}
 	return false;
 }
 
-void printboard(int width, int height, const tile board[][COLUMNS]) { //{{{
-// ┌─┐
-// │ │
-// └─┘
+// board not modified, but gcc complains if I put const there
+void printboard(int width, int height, color board[][width]) { //{{{
 	puts("\x1B[H");
 
-	/*
-	putchar('+');
-	for (int x = 0; x < width; x++)
-		putchar('-');
-	putchar('+');
-	putchar(0xA);
-	*/
 	printf("┌");
 	for (int x = 0; x < width; x++)
 		printf("─");
@@ -73,48 +63,39 @@ void printboard(int width, int height, const tile board[][COLUMNS]) { //{{{
 	putchar(0xA);
 
 	for (int y = 0; y < height; y++) {
-		//putchar('|');
 		printf("│");
 		for (int x = 0; x < width; x++) {
 			switch (board[y][x]) {
 				case GREEN:
-					fputs(GRNSTR "█" DEFSTR, stdout);
+					printf(GRNSTR "█" DEFSTR);
 					break;
 				case RED:
-					fputs(REDSTR "█" DEFSTR, stdout);
+					printf(REDSTR "█" DEFSTR);
 					break;
 				case ORANGE:
-					fputs(ORGSTR "█" DEFSTR, stdout);
+					printf(ORGSTR "█" DEFSTR);
 					break;
 				case YELLOW:
-					fputs(YELSTR "█" DEFSTR, stdout);
+					printf(YELSTR "█" DEFSTR);
 					break;
 				case BLUE:
-					fputs(BLUSTR "█" DEFSTR, stdout);
+					printf(BLUSTR "█" DEFSTR);
 					break;
 				case MAGENTA:
-					fputs(MAGSTR "█" DEFSTR, stdout);
+					printf(MAGSTR "█" DEFSTR);
 					break;
 				case CYAN:
-					fputs(CYASTR "█" DEFSTR, stdout);
+					printf(CYASTR "█" DEFSTR);
 					break;
 				case EMPTY:
 				default:
 					putchar(' ');
-					//putchar(board[y][x]);
 			}
 		}
-		//putchar('|');
 		printf("│");
 		putchar(0xA);
 	}
-	/*
-	putchar('+');
-	for (int x = 0; x < width; x++)
-		putchar('-');
-	putchar('+');
-	putchar(0xA);
-	*/
+
 	printf("└");
 	for (int x = 0; x < width; x++)
 		printf("─");
@@ -122,13 +103,13 @@ void printboard(int width, int height, const tile board[][COLUMNS]) { //{{{
 	putchar(0xA);
 } //}}}
 
-void delete_row(tile board[][COLUMNS], int row) {
+void delete_row(int width, color board[][width], int row) {
 	for (int y = row; y > 0; y--) {
-		for (int x = 0; x < COLUMNS; x++) {
+		for (int x = 0; x < width; x++) {
 			board[y][x] = board[y - 1][x];
 		}
 	}
-	for (int x = 0; x < COLUMNS; x++) {
+	for (int x = 0; x < width; x++) {
 		board[0][x] = EMPTY;
 	}
 }
@@ -159,10 +140,9 @@ int main() {
 	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 	//
 
-	// I :: Cyan {{{2
+	// I :: Cyan {{{1
 	piece p_i = {
 		.color = CYAN,
-		.tile = 'I',
 		.bounds = 3,
 		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
@@ -175,10 +155,9 @@ int main() {
 	};
 	p_i.shape = i_shape;
 
-	// O :: Yellow {{{2
+	// O :: Yellow {{{1
 	piece p_o = {
 		.color = YELLOW,
-		.tile = 'O',
 		.bounds = 1,
 		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
@@ -191,10 +170,9 @@ int main() {
 	};
 	p_o.shape = o_shape;
 
-	// T :: Magenta {{{2
+	// T :: Magenta {{{1
 	piece p_t = {
 		.color = MAGENTA,
-		.tile = 'T',
 		.bounds = 2,
 		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
@@ -206,10 +184,9 @@ int main() {
 		{.x = 1, .y = 1},
 	};
 	p_t.shape = t_shape;
-	// S :: Green {{{2
+	// S :: Green {{{1
 	piece p_s = {
 		.color = GREEN,
-		.tile = 'S',
 		.bounds = 2,
 		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
@@ -221,10 +198,9 @@ int main() {
 		{.x = 1, .y = 2},
 	};
 	p_s.shape = s_shape;
-	// Z :: Red {{{2
+	// Z :: Red {{{1
 	piece p_z = {
 		.color = RED,
-		.tile = 'Z',
 		.bounds = 2,
 		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
@@ -236,10 +212,9 @@ int main() {
 		{.x = 0, .y = 2},
 	};
 	p_z.shape = z_shape;
-	// J :: Blue {{{2
+	// J :: Blue {{{1
 	piece p_j = {
 		.color = BLUE,
-		.tile = 'J',
 		.bounds = 2,
 		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
@@ -251,10 +226,9 @@ int main() {
 		{.x = 1, .y = 2},
 	};
 	p_j.shape = j_shape;
-	// L :: Orange {{{2
+	// L :: Orange {{{1
 	piece p_l = {
 		.color = ORANGE,
-		.tile = 'L',
 		.bounds = 2,
 		.shape = malloc(sizeof(point) * 4)
 	};
@@ -266,27 +240,26 @@ int main() {
 	};
 	p_l.shape = l_shape;
 
-	///}}}2
+	///}}}1
 
-	int width = COLUMNS;
-	int height = ROWS;
-	// is this safe?
-	tile board[height][width];
+	const int width = 8;
+	const int height = 20;
+
+	// the extra height is for collision at the bottom
+	color board[height + 1][width];
 
 	for (int y = 0; y < height; y++)
 	for (int x = 0; x < width; x++)
 	{
-		board[y][x] = 0;
+		board[y][x] = EMPTY;
 	}
+
 	for (int x = 0; x < width; x++) {
 		board[height][x] = 'X';
 	}
 
-	char c;
-	int x = 1;
-
-	int y = 0;
-	//for (int y = 0; ; y = (y + 1) % height) {
+	char input;
+	point pos = {.x = 1, .y = 0};
 
 	// TODO the quickdrop code makes the display
 	// behave weird
@@ -300,29 +273,27 @@ int main() {
 	bool quickdrop = false;
 	for (int loop = 0;; loop++) {
 		if (loop % dropspeed == 0) {
-			y++;
+			pos.y++;
 		}
 
 		if (!quickdrop) {
-			c = getchar();
+			input = getchar();
 
-			if (c == 'l') ++x;
-			if (c == 'h') --x;
-			if (c == ' ') quickdrop = true;
-			if (c == 'r') rotate_piece(piece);
+			if (input == 'l') ++pos.x;
+			if (input == 'h') --pos.x;
+			if (input == ' ') quickdrop = true;
+			if (input == 'r') rotate_piece(piece);
 		}
 
 		for (int i = 0; i < 4; i++) {
 			point p = piece->shape[i];
-			board[y + p.y][x + p.x] = piece->color;
+			board[pos.y + p.y][pos.x + p.x] = piece->color;
 		}
-		//board[y][x] = BLUE;
 
 		printboard(width, height, board);	
 		// 20 ticks per secound
 		if (!quickdrop)
 			usleep(1000000 / 20);
-		//sleep(1);
 
 		bool piece_stoped = false;
 		for (int i = 0; i < 4; i++) {
@@ -331,8 +302,8 @@ int main() {
 				.y = piece->shape[i].y + 1
 			};
 
-			if( board[y+p.y][x+p.x] != EMPTY
-					&& !in_piece(p, *piece))
+			if (board[pos.y+p.y][pos.x+p.x] != EMPTY
+					&& !in_piece(p, piece))
 				piece_stoped = true;
 		}
 
@@ -340,8 +311,11 @@ int main() {
 			// This is kindof a stack
 			int rows_removed[4];
 			int ptr = 0;
-			// 2, 1, 0
-			for (int line = y; line < height && line <= y + piece->bounds; line++) {
+
+			for (int line = pos.y;
+			     line < height && line <= pos.y + piece->bounds;
+			     line++)
+			{
 				int all_filled = true;
 				for (int x = 0; x < width; x++) {
 					all_filled &= !(board[line][x] == EMPTY);
@@ -350,11 +324,13 @@ int main() {
 					rows_removed[ptr++] = line;
 				}
 			}
+
 			for (int i = 0; i < ptr; i++) {
-				delete_row(board, rows_removed[i]);
+				delete_row(width, board, rows_removed[i]);
 			}
-			y = 0;
-			x = 1;
+
+			pos.x = 0;
+			pos.y = 1;
 			quickdrop = false;
 
 			// since I reuse the same pieces I need to reset
@@ -362,18 +338,17 @@ int main() {
 			while (piece->rotation != 0)
 				rotate_piece(piece);
 
+			// next piece
 			piece++;
 
-			//counter.c = 0;
 			continue;
 		}
 
 		// removes piece
 		for (int i = 0; i < 4; i++) {
 			point p = piece->shape[i];
-			board[y + p.y][x + p.x] = EMPTY;
+			board[pos.y + p.y][pos.x + p.x] = EMPTY;
 		}
-		//board[y][x] = EMPTY;
 	}
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
