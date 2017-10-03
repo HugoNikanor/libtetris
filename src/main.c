@@ -234,18 +234,26 @@ int main() {
 	int y = 0;
 	//for (int y = 0; ; y = (y + 1) % height) {
 
+	// TODO the quickdrop code makes the display
+	// behave weird
+
 	int dropspeed = 7;
 	piece pieces[7] = {p_i, p_o, p_t, p_s, p_z, p_j, p_l};
 	piece* pp = pieces;
 	piece piece = *pp;
+	bool quickdrop = false;
 	for (int loop = 0;; loop++) {
 		if (loop % dropspeed == 0) {
 			y++;
 		}
-		c = getchar();
 
-		if (c == 'l') ++x;
-		if (c == 'h') --x;
+		if (!quickdrop) {
+			c = getchar();
+
+			if (c == 'l') ++x;
+			if (c == 'h') --x;
+			if (c == ' ') quickdrop = true;
+		}
 		//if (c == 'e') goto cleanup;
 
 		for (int i = 0; i < 4; i++) {
@@ -254,7 +262,8 @@ int main() {
 		}
 
 		printboard(width, height, board);	
-		usleep(1000000 / dropspeed);
+		if (!quickdrop)
+			usleep(1000000 / dropspeed);
 		//sleep(1);
 
 		bool piece_stoped = false;
@@ -273,6 +282,7 @@ int main() {
 			y = 0;
 			x = 1;
 			piece = *(++pp);
+			quickdrop = false;
 			continue;
 		}
 
