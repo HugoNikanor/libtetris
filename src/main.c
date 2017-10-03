@@ -261,8 +261,9 @@ int main() {
 	char input;
 	point pos = {.x = 1, .y = 0};
 
-	// TODO the quickdrop code makes the display
-	// behave weird
+	// quickdrop disables board printing and sleeping
+	// in the game loop
+	bool quickdrop = false;
 
 	// how often the piece should drop, in ticks
 	int dropspeed = 10;
@@ -270,30 +271,30 @@ int main() {
 	//piece pieces[7] = {p_o, p_o, p_o, p_o, p_o, p_o, p_o};
 	//piece pieces[10] = {p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i};
 	piece* piece = pieces;
-	bool quickdrop = false;
 	for (int loop = 0;; loop++) {
 		if (loop % dropspeed == 0) {
 			pos.y++;
 		}
 
-		if (!quickdrop) {
-			input = getchar();
+		input = getchar();
 
-			if (input == 'l') ++pos.x;
-			if (input == 'h') --pos.x;
-			if (input == ' ') quickdrop = true;
-			if (input == 'r') rotate_piece(piece);
-		}
+		if (input == 'l') ++pos.x;
+		if (input == 'h') --pos.x;
+		if (input == ' ') quickdrop = true;
+		if (input == 'r') rotate_piece(piece);
+	
 
 		for (int i = 0; i < 4; i++) {
 			point p = piece->shape[i];
 			board[pos.y + p.y][pos.x + p.x] = piece->color;
 		}
 
-		printboard(width, height, board);	
-		// 20 ticks per secound
-		if (!quickdrop)
+		if (!quickdrop) {
+			printboard(width, height, board);	
+
+			// 20 ticks per secound
 			usleep(1000000 / 20);
+		}
 
 		bool piece_stoped = false;
 		for (int i = 0; i < 4; i++) {
@@ -329,9 +330,15 @@ int main() {
 				delete_row(width, board, rows_removed[i]);
 			}
 
+			// this is needed since quickdrop disables
+			// regular board printing
+			if (quickdrop) {
+				printboard(width, height, board);	
+				quickdrop = false;
+			}
+
 			pos.x = 0;
 			pos.y = 1;
-			quickdrop = false;
 
 			// since I reuse the same pieces I need to reset
 			// the things on them that change

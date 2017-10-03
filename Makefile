@@ -1,7 +1,7 @@
 .PHONY: all clean test
 
 CC=gcc
-CFLAGS=-std=c99 -Wall -fPIC -pedantic -I.
+CFLAGS=-std=c99 -Wall -fPIC -pedantic -I. -ggdb
 LIBS=-lm
 C_FILES := $(wildcard src/*.c)
 O_FILES := $(addprefix obj/,$(notdir $(C_FILES:.c=.o)))
