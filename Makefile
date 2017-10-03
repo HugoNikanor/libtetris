@@ -1,7 +1,8 @@
 .PHONY: all clean test
 
 CC=gcc
-CFLAGS=-std=c99 -Wall -fPIC -pedantic -I. -ggdb
+CFLAGS=-std=c99 -Wall -fPIC -pedantic -D_XOPEN_SOURCE=600
+DEBUGFLAGS=-ggdb
 LIBS=-lm
 C_FILES := $(wildcard src/*.c)
 O_FILES := $(addprefix obj/,$(notdir $(C_FILES:.c=.o)))
@@ -10,7 +11,7 @@ obj/%.o: src/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 tetris : $(O_FILES)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) -o $@ $^ $(LIBS)
 
 all : tetris
 
