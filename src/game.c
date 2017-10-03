@@ -301,7 +301,8 @@ void game_loop() {
 				rotate_piece(piece);
 
 			// next piece
-			piece++;
+			//piece++;
+			piece = &pieces[random() % 7];
 
 			continue;
 		}
