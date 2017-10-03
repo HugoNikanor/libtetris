@@ -15,15 +15,17 @@ typedef struct {
 
 typedef enum
 	{ EMPTY, GREEN, RED, ORANGE, YELLOW, BLUE, MAGENTA, CYAN }
-tiles;
+color;
 
 typedef unsigned char tile; 
 
 typedef struct {
-	tiles color;
+	color color;
+	// TODO remove this
 	tile tile;
 	unsigned rotation : 2;
-	point bounds;
+	// the size of the bounding box of the piece - 1
+	int bounds;
 	point* shape; // list
 } piece;
 
@@ -122,22 +124,13 @@ void printboard(int width, int height, const tile board[][COLUMNS]) { //{{{
 
 void rotatePiece(piece* p) {
 	for (int i = 0; i < 4; i++) {
-		/*
-		int x = p->shape[i].x;
-		p->shape[i].x = p->shape[i].y;
-		p->shape[i].y = x;
-		if (p->rotation & 1 == 1) {
-			p->shape[i].y = p->bounds.y - p->shape[i].y;
-		}
-		*/
 		int x = p->shape[i].x;
 		p->shape[i].x = p->shape[i].y;
 		p->shape[i].y = x;
 
 		if (p->rotation & 1 == 1) {
-			p->shape[i].x = p->bounds.x - p->shape[i].x;
+			p->shape[i].x = p->bounds - p->shape[i].x;
 		}
-
 	}
 }
 
@@ -160,7 +153,7 @@ int main() {
 	piece p_i = {
 		.color = CYAN,
 		.tile = 'I',
-		.bounds = {3},
+		.bounds = 3,
 		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
 	};
@@ -176,7 +169,7 @@ int main() {
 	piece p_o = {
 		.color = YELLOW,
 		.tile = 'O',
-		.bounds = {1},
+		.bounds = 1,
 		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
 	};
@@ -192,7 +185,7 @@ int main() {
 	piece p_t = {
 		.color = MAGENTA,
 		.tile = 'T',
-		.bounds = {2},
+		.bounds = 2,
 		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
 	};
@@ -207,7 +200,7 @@ int main() {
 	piece p_s = {
 		.color = GREEN,
 		.tile = 'S',
-		.bounds = {2},
+		.bounds = 2,
 		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
 	};
@@ -222,7 +215,7 @@ int main() {
 	piece p_z = {
 		.color = RED,
 		.tile = 'Z',
-		.bounds = {2},
+		.bounds = 2,
 		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
 	};
@@ -237,7 +230,7 @@ int main() {
 	piece p_j = {
 		.color = BLUE,
 		.tile = 'J',
-		.bounds = {2},
+		.bounds = 2,
 		.rotation = 0,
 		.shape = malloc(sizeof(point) * 4)
 	};
@@ -252,7 +245,7 @@ int main() {
 	piece p_l = {
 		.color = ORANGE,
 		.tile = 'L',
-		.bounds = {2},
+		.bounds = 2,
 		.shape = malloc(sizeof(point) * 4)
 	};
 	point l_shape[4] = {
