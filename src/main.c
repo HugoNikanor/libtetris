@@ -35,7 +35,7 @@ typedef enum { false, true } bool;
 #define REDSTR "\x1B[1;31m"
 #define ORGSTR "\x1B[0;33m"
 #define YELSTR "\x1B[1;33m"
-#define BLUSTR "\x1B[0;35m"
+#define BLUSTR "\x1B[0;34m"
 #define MAGSTR "\x1B[1;35m"
 #define CYASTR "\x1B[0;36m"
 
@@ -122,7 +122,18 @@ void printboard(int width, int height, const tile board[][COLUMNS]) { //{{{
 	putchar(0xA);
 } //}}}
 
-void rotatePiece(piece* p) {
+void delete_row(tile board[][COLUMNS], int row) {
+	for (int y = row; y > 0; y--) {
+		for (int x = 0; x < COLUMNS; x++) {
+			board[y][x] = board[y - 1][x];
+		}
+	}
+	for (int x = 0; x < COLUMNS; x++) {
+		board[0][x] = EMPTY;
+	}
+}
+
+void rotate_piece(piece* p) {
 	p->rotation++;
 	for (int i = 0; i < 4; i++) {
 		int x = p->shape[i].x;
@@ -283,8 +294,9 @@ int main() {
 	// how often the piece should drop, in ticks
 	int dropspeed = 10;
 	piece pieces[7] = {p_i, p_o, p_t, p_s, p_z, p_j, p_l};
-	piece* pp = pieces;
-	piece piece = *pp;
+	//piece pieces[7] = {p_o, p_o, p_o, p_o, p_o, p_o, p_o};
+	//piece pieces[10] = {p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i};
+	piece* piece = pieces;
 	bool quickdrop = false;
 	for (int loop = 0;; loop++) {
 		if (loop % dropspeed == 0) {
@@ -297,13 +309,14 @@ int main() {
 			if (c == 'l') ++x;
 			if (c == 'h') --x;
 			if (c == ' ') quickdrop = true;
-			if (c == 'r') rotatePiece(&piece);
+			if (c == 'r') rotate_piece(piece);
 		}
 
 		for (int i = 0; i < 4; i++) {
-			point p = piece.shape[i];
-			board[y + p.y][x + p.x] = piece.color;
+			point p = piece->shape[i];
+			board[y + p.y][x + p.x] = piece->color;
 		}
+		//board[y][x] = BLUE;
 
 		printboard(width, height, board);	
 		// 20 ticks per secound
@@ -314,29 +327,53 @@ int main() {
 		bool piece_stoped = false;
 		for (int i = 0; i < 4; i++) {
 			point p = {
-				.x = piece.shape[i].x,
-				.y = piece.shape[i].y + 1
+				.x = piece->shape[i].x,
+				.y = piece->shape[i].y + 1
 			};
 
 			if( board[y+p.y][x+p.x] != EMPTY
-					&& !in_piece(p, piece))
+					&& !in_piece(p, *piece))
 				piece_stoped = true;
 		}
 
 		if (piece_stoped) {
+			// This is kindof a stack
+			int rows_removed[4];
+			int ptr = 0;
+			// 2, 1, 0
+			for (int line = y; line < height && line <= y + piece->bounds; line++) {
+				int all_filled = true;
+				for (int x = 0; x < width; x++) {
+					all_filled &= !(board[line][x] == EMPTY);
+				}
+				if (all_filled) {
+					rows_removed[ptr++] = line;
+				}
+			}
+			for (int i = 0; i < ptr; i++) {
+				delete_row(board, rows_removed[i]);
+			}
 			y = 0;
 			x = 1;
-			piece = *(++pp);
 			quickdrop = false;
+
+			// since I reuse the same pieces I need to reset
+			// the things on them that change
+			while (piece->rotation != 0)
+				rotate_piece(piece);
+
+			piece++;
+
 			//counter.c = 0;
 			continue;
 		}
 
 		// removes piece
 		for (int i = 0; i < 4; i++) {
-			point p = piece.shape[i];
+			point p = piece->shape[i];
 			board[y + p.y][x + p.x] = EMPTY;
 		}
+		//board[y][x] = EMPTY;
 	}
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
