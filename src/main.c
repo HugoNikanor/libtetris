@@ -12,7 +12,7 @@
 #include <pthread.h>
 #include <string.h>
 
-#include "game.h"
+#include "tetris.h"
 #include "graphics.h"
 
 int width = 8;

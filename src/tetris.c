@@ -3,9 +3,7 @@
 #include <unistd.h> // usleep
 #include <string.h>
 
-#include "graphics.h"
-
-#include "game.h"
+#include "tetris.h"
 
 bool in_piece(point p, piece* piece) {
 	for (int i = 0; i < 4; i++) {
@@ -262,7 +260,7 @@ void game_loop(const int width, const int height) {
 			//printboard(width, height, board);
 
 			// 20 ticks per secound
-			usleep(1000000 / 100);
+			usleep(1000000 / 50);
 		}
 
 		bool piece_stoped = false;

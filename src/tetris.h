@@ -5,6 +5,7 @@
 
 #include "types.h"
 
+// These are for drawing the board
 color** _g_board;
 bool _g_board_live;
 

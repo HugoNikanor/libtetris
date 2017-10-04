@@ -13,13 +13,13 @@ obj/%.o: src/%.c
 tetris : $(O_FILES)
 	$(CC) $(CFLAGS) $(DEBUGFLAGS) -o $@ $^ $(LIBS)
 
-tetris.o : src/game.c
+tetris.o : src/tetris.c
 	$(CC) -c $(CFAGS) -o $@ $< $(LIBS)
 
 libtetris.a : tetris.o
 	ar rcs libtetris.a tetris.o
 
-all : libtetris.a
+all : tetris libtetris.a
 
 # TODO figure out how to auto compile test files
 # TODO Also figure out how to put shader files in own directory
