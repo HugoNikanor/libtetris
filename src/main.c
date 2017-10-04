@@ -6,7 +6,28 @@
 // for non blocking input
 #include <fcntl.h>
 
+#include <stdio.h> 
+#include <stdlib.h>
+
+#include <pthread.h>
+#include <string.h>
+
 #include "game.h"
+#include "graphics.h"
+
+int width = 8;
+int height = 20;
+
+
+void* f(void* args) {
+	while (_g_board_live != true)
+		usleep(100000);
+	color (*board)[width] = (color (*)[width]) _g_board;
+	while (true) {
+		printboard(width, height, board);
+		usleep(1000000/20);
+	}
+}
 
 int main() {
 
@@ -23,7 +44,9 @@ int main() {
 	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 	//
 
-	game_loop();
+	pthread_t cThread;
+	pthread_create(&cThread, NULL, f, NULL);
+	game_loop(width, height);
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 }

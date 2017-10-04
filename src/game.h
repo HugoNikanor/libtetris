@@ -5,6 +5,9 @@
 
 #include "types.h"
 
+color** _g_board;
+bool _g_board_live;
+
 bool in_piece(point p, piece* piece);
 void delete_row(int width, color board[][width], int row);
 void rotate_piece(piece* p);

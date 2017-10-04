@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h> // usleep
+#include <string.h>
 
 #include "graphics.h"
 
@@ -91,13 +92,22 @@ void move(direction dir,
 
 }
 
-void game_loop() {
+void game_loop(const int width, const int height) {
 	// board setup {{{1
-	const int width = 8;
-	const int height = 20;
 
 	// the extra height is for collision at the bottom
-	color board[height + 1][width];
+	//color board[height + 1][width];
+	_g_board = malloc((height + 1) *sizeof(color*));
+	for (int i = 0; i < height + 1; i++) {
+		_g_board[i] = malloc(width*sizeof(color));
+		if (_g_board[i] == NULL)
+			return;
+	}
+
+	_g_board_live = true;
+
+	//color board[height+1][width];
+	color (*board)[width] = (color (*)[width]) _g_board;
 
 	for (int y = 0; y < height; y++)
 	for (int x = 0; x < width; x++)
@@ -219,17 +229,21 @@ void game_loop() {
 	bool quickdrop = false;
 
 	// how often the piece should drop, in ticks
-	int dropspeed = 10;
+	int dropspeed = 1;
 	piece pieces[7] = {p_i, p_o, p_t, p_s, p_z, p_j, p_l};
 	//piece pieces[7] = {p_o, p_o, p_o, p_o, p_o, p_o, p_o};
 	//piece pieces[10] = {p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i};
+	char moves[5] = {'l', 'l', 'h', 'h', 'r'};
 	piece* piece = pieces;
 	for (int loop = 0;; loop++) {
 		if (loop % dropspeed == 0) {
 			pos.y++;
 		}
 
-		input = getchar();
+		//input = getchar();
+		if (random() % 10 == 0) {
+			input = moves[random() % 5];
+		} else input = 0;
 
 		if (input == 'l') move(RIGHT, width, board, &pos, piece);
 		if (input == 'h') move(LEFT,  width, board, &pos, piece);
@@ -245,10 +259,10 @@ void game_loop() {
 		}
 
 		if (!quickdrop) {
-			printboard(width, height, board);
+			//printboard(width, height, board);
 
 			// 20 ticks per secound
-			usleep(1000000 / 20);
+			usleep(1000000 / 100);
 		}
 
 		bool piece_stoped = false;
@@ -288,7 +302,7 @@ void game_loop() {
 			// this is needed since quickdrop disables
 			// regular board printing
 			if (quickdrop) {
-				printboard(width, height, board);
+				//printboard(width, height, board);
 				quickdrop = false;
 			}
 
