@@ -5,6 +5,24 @@
 
 #include "tetris.h"
 
+bool piece_invalid(piece* piece, point pos, int width, color board[][width]) {
+	for (int i = 0; i < 4; i++) {
+		point p = {
+			.x = piece->shape[i].x + pos.x,
+			.y = piece->shape[i].y + pos.y
+		};
+		if (board[p.y][p.x] != EMPTY)
+			return true;
+	}
+	return false;
+}
+void reset_board(int width, int height, color board[][width]) {
+	for (int y = 0; y < height; y++)
+	for (int x = 0; x < width; x++) {
+		board[y][x] = EMPTY;
+	}
+}
+
 bool in_piece(point p, piece* piece) {
 	for (int i = 0; i < 4; i++) {
 		point pp = piece->shape[i];
@@ -315,6 +333,9 @@ void game_loop(const int width, const int height) {
 			// next piece
 			//piece++;
 			piece = &pieces[random() % 7];
+			if (piece_invalid(piece, pos, width, board)) {
+				reset_board(width, height, board);
+			}
 
 			continue;
 		}
