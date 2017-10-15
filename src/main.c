@@ -46,7 +46,11 @@ int main() {
 
 	pthread_t cThread;
 	pthread_create(&cThread, NULL, f, NULL);
-	game_loop(width, height);
+#ifdef AUTOPLAY
+	game_loop(width, height, 7, &move_generator);
+#else
+	game_loop(width, height, 7, &move_manual);
+#endif
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 }

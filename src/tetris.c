@@ -75,7 +75,7 @@ void safe_rotate(point* pos, piece* piece, int width, color board[][width]) {
 	}
 }
 
-void move(direction dir,
+void move_piece(direction dir,
 		int width,
 		color board[][width],
 		point* pos,
@@ -108,7 +108,24 @@ void move(direction dir,
 
 }
 
-void game_loop(const int width, const int height) {
+move move_generator() {
+	move moves[5] = { RSHIFT, RSHIFT, LSHIFT, LSHIFT, ROTATE };
+	if (random() % 10 == 0) {
+		return moves[random() % 5];
+	} else return IDLE;
+}
+
+move move_manual() {
+	switch (getchar()) {
+		case 'h': return LSHIFT;
+		case 'l': return RSHIFT;
+		case 'r': return ROTATE;
+		case ' ': return QUICKDROP;
+		default:  return IDLE;
+	}
+}
+
+void game_loop(const int width, const int height, int dropspeed, move (*get_move)()) {
 	// board setup {{{1
 
 	// the extra height is for collision at the bottom
@@ -237,19 +254,16 @@ void game_loop(const int width, const int height) {
 
 	///}}}1
 
-	char input;
+	move move;
 	point pos = {.x = 1, .y = 0};
 
 	// quickdrop disables board printing and sleeping
 	// in the game loop
 	bool quickdrop = false;
 
-	// how often the piece should drop, in ticks
-	int dropspeed = 1;
 	piece pieces[7] = {p_i, p_o, p_t, p_s, p_z, p_j, p_l};
 	//piece pieces[7] = {p_o, p_o, p_o, p_o, p_o, p_o, p_o};
 	//piece pieces[10] = {p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i};
-	char moves[5] = {'l', 'l', 'h', 'h', 'r'};
 	piece* piece = pieces;
 	for (int loop = 0;; loop++) {
 		if (loop % dropspeed == 0) {
@@ -257,14 +271,12 @@ void game_loop(const int width, const int height) {
 		}
 
 		//input = getchar();
-		if (random() % 10 == 0) {
-			input = moves[random() % 5];
-		} else input = 0;
+		move = get_move();
 
-		if (input == 'l') move(RIGHT, width, board, &pos, piece);
-		if (input == 'h') move(LEFT,  width, board, &pos, piece);
-		if (input == ' ') quickdrop = true;
-		if (input == 'r') safe_rotate(&pos, piece, width, board);
+		if (move == RSHIFT)    move_piece(RIGHT, width, board, &pos, piece);
+		if (move == LSHIFT)    move_piece(LEFT,  width, board, &pos, piece);
+		if (move == ROTATE)    safe_rotate(&pos, piece, width, board);
+		if (move == QUICKDROP) quickdrop = true;
 
 
 

@@ -1,7 +1,7 @@
 .PHONY: all clean test
 
 CC=gcc
-CFLAGS=-std=c99 -Wall -fPIC -pthread -pedantic -D_XOPEN_SOURCE=600
+CFLAGS=-std=c99 -Wall -fPIC -pthread -pedantic -D_XOPEN_SOURCE=600 -DAUTOPLAY
 DEBUGFLAGS=-ggdb
 LIBS=-lm
 C_FILES := $(wildcard src/*.c)
