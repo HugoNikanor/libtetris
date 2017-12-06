@@ -1,10 +1,27 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h> // usleep
+#include <string.h>
 
-#include "graphics.h"
+#include "tetris.h"
 
-#include "game.h"
+bool piece_invalid(piece* piece, point pos, int width, color board[][width]) {
+	for (int i = 0; i < 4; i++) {
+		point p = {
+			.x = piece->shape[i].x + pos.x,
+			.y = piece->shape[i].y + pos.y
+		};
+		if (board[p.y][p.x] != EMPTY)
+			return true;
+	}
+	return false;
+}
+void reset_board(int width, int height, color board[][width]) {
+	for (int y = 0; y < height; y++)
+	for (int x = 0; x < width; x++) {
+		board[y][x] = EMPTY;
+	}
+}
 
 bool in_piece(point p, piece* piece) {
 	for (int i = 0; i < 4; i++) {
@@ -58,7 +75,7 @@ void safe_rotate(point* pos, piece* piece, int width, color board[][width]) {
 	}
 }
 
-void move(direction dir,
+void move_piece(direction dir,
 		int width,
 		color board[][width],
 		point* pos,
@@ -91,13 +108,43 @@ void move(direction dir,
 
 }
 
-void game_loop() {
+move move_generator() {
+	move moves[5] = { RSHIFT, RSHIFT, LSHIFT, LSHIFT, ROTATE };
+	if (random() % 10 == 0) {
+		return moves[random() % 5];
+	} else return IDLE;
+}
+
+move move_manual() {
+	switch (getchar()) {
+		case 'h': return LSHIFT;
+		case 'l': return RSHIFT;
+		case 'r': return ROTATE;
+		case ' ': return QUICKDROP;
+		default:  return IDLE;
+	}
+}
+
+void game_loop(const tetris_settings* settings) {
+	int width = settings->width;
+	int height = settings->height;
+	int dropspeed = settings->dropspeed;
+
 	// board setup {{{1
-	const int width = 8;
-	const int height = 20;
 
 	// the extra height is for collision at the bottom
-	color board[height + 1][width];
+	//color board[height + 1][width];
+	_g_board = malloc((height + 1) *sizeof(color*));
+	for (int i = 0; i < height + 1; i++) {
+		_g_board[i] = malloc(width*sizeof(color));
+		if (_g_board[i] == NULL)
+			return;
+	}
+
+	_g_board_live = true;
+
+	//color board[height+1][width];
+	color (*board)[width] = (color (*)[width]) _g_board;
 
 	for (int y = 0; y < height; y++)
 	for (int x = 0; x < width; x++)
@@ -211,15 +258,13 @@ void game_loop() {
 
 	///}}}1
 
-	char input;
+	move move;
 	point pos = {.x = 1, .y = 0};
 
 	// quickdrop disables board printing and sleeping
 	// in the game loop
 	bool quickdrop = false;
 
-	// how often the piece should drop, in ticks
-	int dropspeed = 10;
 	piece pieces[7] = {p_i, p_o, p_t, p_s, p_z, p_j, p_l};
 	//piece pieces[7] = {p_o, p_o, p_o, p_o, p_o, p_o, p_o};
 	//piece pieces[10] = {p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i};
@@ -229,12 +274,13 @@ void game_loop() {
 			pos.y++;
 		}
 
-		input = getchar();
+		//input = getchar();
+		move = settings->move_func();
 
-		if (input == 'l') move(RIGHT, width, board, &pos, piece);
-		if (input == 'h') move(LEFT,  width, board, &pos, piece);
-		if (input == ' ') quickdrop = true;
-		if (input == 'r') safe_rotate(&pos, piece, width, board);
+		if (move == RSHIFT)    move_piece(RIGHT, width, board, &pos, piece);
+		if (move == LSHIFT)    move_piece(LEFT,  width, board, &pos, piece);
+		if (move == ROTATE)    safe_rotate(&pos, piece, width, board);
+		if (move == QUICKDROP) quickdrop = true;
 
 
 
@@ -245,10 +291,10 @@ void game_loop() {
 		}
 
 		if (!quickdrop) {
-			printboard(width, height, board);
+			//printboard(width, height, board);
 
 			// 20 ticks per secound
-			usleep(1000000 / 20);
+			usleep(1000000 / 50);
 		}
 
 		bool piece_stoped = false;
@@ -288,7 +334,7 @@ void game_loop() {
 			// this is needed since quickdrop disables
 			// regular board printing
 			if (quickdrop) {
-				printboard(width, height, board);
+				//printboard(width, height, board);
 				quickdrop = false;
 			}
 
@@ -303,6 +349,9 @@ void game_loop() {
 			// next piece
 			//piece++;
 			piece = &pieces[random() % 7];
+			if (piece_invalid(piece, pos, width, board)) {
+				reset_board(width, height, board);
+			}
 
 			continue;
 		}
