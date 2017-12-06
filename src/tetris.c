@@ -125,7 +125,11 @@ move move_manual() {
 	}
 }
 
-void game_loop(const int width, const int height, int dropspeed, move (*get_move)()) {
+void game_loop(const tetris_settings* settings) {
+	int width = settings->width;
+	int height = settings->height;
+	int dropspeed = settings->dropspeed;
+
 	// board setup {{{1
 
 	// the extra height is for collision at the bottom
@@ -271,7 +275,7 @@ void game_loop(const int width, const int height, int dropspeed, move (*get_move
 		}
 
 		//input = getchar();
-		move = get_move();
+		move = settings->move_func();
 
 		if (move == RSHIFT)    move_piece(RIGHT, width, board, &pos, piece);
 		if (move == LSHIFT)    move_piece(LEFT,  width, board, &pos, piece);

@@ -7,6 +7,14 @@
 
 typedef enum { IDLE, LSHIFT, RSHIFT, ROTATE, QUICKDROP } move;
 
+typedef struct {
+	int width;
+	int height;
+	int dropspeed;
+	move (*move_func)(void);
+} tetris_settings;
+
+
 // These are for drawing the board
 color** _g_board;
 bool _g_board_live;
@@ -21,6 +29,7 @@ void move_piece(direction dir, int width, color board[][width], point* pos, piec
 
 move move_generator();
 move move_manual();
-void game_loop(const int width, const int height, int dropspeed, move (*cf)());
+void game_loop(const tetris_settings*);
+
 
 #endif // GAME_H
