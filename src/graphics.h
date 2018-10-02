@@ -7,4 +7,4 @@
 // board not modified, but gcc complains if I put const there
 void printboard(int width, int height, color board[][width]);
 
-#endif // GRAPHICS_H
+#endif /* GRAPHICS_H */
