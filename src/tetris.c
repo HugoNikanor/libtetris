@@ -5,6 +5,9 @@
 
 #include "tetris.h"
 
+color** _g_board;
+bool _g_board_live;
+
 bool piece_invalid(piece* piece, point pos, int width, color board[][width]) {
 	for (int i = 0; i < 4; i++) {
 		point p = {

@@ -8,13 +8,10 @@ C_FILES := $(wildcard src/*.c)
 O_FILES := $(addprefix obj/,$(notdir $(C_FILES:.c=.o)))
 
 obj/%.o: src/%.c
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) -c -o $@ $<
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) -o $@ $<
 
 tetris : $(O_FILES)
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) -o $@ $^ $(LIBS)
-
-tetris.o : src/tetris.c
-	$(CC) -c $(CFAGS) -o $@ $< $(LIBS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
 libtetris.a : tetris.o
 	ar rcs libtetris.a tetris.o
