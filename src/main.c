@@ -38,6 +38,7 @@ void print_help() {
 		"-h         | Show this help\n");
 }
 
+
 int main(int argc, char* argv[]) {
 
 	// makes IO non-blocking
@@ -86,9 +87,14 @@ int main(int argc, char* argv[]) {
 		           : &move_manual
 	};
 
+	/* Hide Cursor */
+	printf("\x1b[?25l");
+
 	// Starts the game
 	game_loop (&settings);
 
 cleanup:
+	/* Show cursor */
+	printf("\x1b[?25h");
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 }
