@@ -361,4 +361,11 @@ void game_loop(const tetris_settings* settings) {
 			board[pos.y + p.y][pos.x + p.x] = EMPTY;
 		}
 	}
+
+
+// cleanup:
+	/* TODO this causes a race condidion, since the render thread also
+	 * reads from _g_board.
+	 */
+	free(_g_board);
 }
