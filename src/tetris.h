@@ -16,7 +16,7 @@ typedef struct {
 
 
 // These are for drawing the board
-extern color** _g_board;
+extern color* _g_board;
 extern bool _g_board_live;
 
 bool piece_invalid(piece* piece, point pos, int width, color board[][width]);

@@ -5,7 +5,7 @@
 
 #include "tetris.h"
 
-color** _g_board;
+color* _g_board;
 bool _g_board_live;
 
 bool piece_invalid(piece* piece, point pos, int width, color board[][width]) {
@@ -137,12 +137,7 @@ void game_loop(const tetris_settings* settings) {
 
 	// the extra height is for collision at the bottom
 	//color board[height + 1][width];
-	_g_board = malloc((height + 1) *sizeof(color*));
-	for (int i = 0; i < height + 1; i++) {
-		_g_board[i] = malloc(width*sizeof(color));
-		if (_g_board[i] == NULL)
-			return;
-	}
+	_g_board = malloc((height + 1) * width * sizeof(color));
 
 	_g_board_live = true;
 
