@@ -164,100 +164,91 @@ void game_loop(const tetris_settings* settings) {
 		.color = CYAN,
 		.bounds = 3,
 		.rotation = 0,
-		.shape = malloc(sizeof(point) * 4)
+		.shape = {
+			{.x = 0, .y = 1},
+			{.x = 1, .y = 1},
+			{.x = 2, .y = 1},
+			{.x = 3, .y = 1},
+		}
 	};
-	point i_shape[4] = {
-		{.x = 0, .y = 1},
-		{.x = 1, .y = 1},
-		{.x = 2, .y = 1},
-		{.x = 3, .y = 1},
-	};
-	p_i.shape = i_shape;
 
 	// O :: Yellow {{{1
 	piece p_o = {
 		.color = YELLOW,
 		.bounds = 1,
 		.rotation = 0,
-		.shape = malloc(sizeof(point) * 4)
+		.shape = {
+			{.x = 0, .y = 0},
+			{.x = 0, .y = 1},
+			{.x = 1, .y = 0},
+			{.x = 1, .y = 1},
+		}
 	};
-	point o_shape[4] = {
-		{.x = 0, .y = 0},
-		{.x = 0, .y = 1},
-		{.x = 1, .y = 0},
-		{.x = 1, .y = 1},
-	};
-	p_o.shape = o_shape;
 
 	// T :: Magenta {{{1
 	piece p_t = {
 		.color = MAGENTA,
 		.bounds = 2,
 		.rotation = 0,
-		.shape = malloc(sizeof(point) * 4)
+		.shape = {
+			{.x = 0, .y = 0},
+			{.x = 1, .y = 0},
+			{.x = 2, .y = 0},
+			{.x = 1, .y = 1},
+		}
 	};
-	point t_shape[4] = {
-		{.x = 0, .y = 0},
-		{.x = 1, .y = 0},
-		{.x = 2, .y = 0},
-		{.x = 1, .y = 1},
-	};
-	p_t.shape = t_shape;
+
 	// S :: Green {{{1
 	piece p_s = {
 		.color = GREEN,
 		.bounds = 2,
 		.rotation = 0,
-		.shape = malloc(sizeof(point) * 4)
+		.shape = {
+			{.x = 0, .y = 0},
+			{.x = 0, .y = 1},
+			{.x = 1, .y = 1},
+			{.x = 1, .y = 2},
+		}
 	};
-	point s_shape[4] = {
-		{.x = 0, .y = 0},
-		{.x = 0, .y = 1},
-		{.x = 1, .y = 1},
-		{.x = 1, .y = 2},
-	};
-	p_s.shape = s_shape;
+
 	// Z :: Red {{{1
 	piece p_z = {
 		.color = RED,
 		.bounds = 2,
 		.rotation = 0,
-		.shape = malloc(sizeof(point) * 4)
+		.shape = {
+			{.x = 1, .y = 0},
+			{.x = 0, .y = 1},
+			{.x = 1, .y = 1},
+			{.x = 0, .y = 2},
+		}
 	};
-	point z_shape[4] = {
-		{.x = 1, .y = 0},
-		{.x = 0, .y = 1},
-		{.x = 1, .y = 1},
-		{.x = 0, .y = 2},
-	};
-	p_z.shape = z_shape;
+
 	// J :: Blue {{{1
 	piece p_j = {
 		.color = BLUE,
 		.bounds = 2,
 		.rotation = 0,
-		.shape = malloc(sizeof(point) * 4)
+		.shape = {
+			{.x = 2, .y = 0},
+			{.x = 2, .y = 1},
+			{.x = 2, .y = 2},
+			{.x = 1, .y = 2},
+		}
 	};
-	point j_shape[4] = {
-		{.x = 2, .y = 0},
-		{.x = 2, .y = 1},
-		{.x = 2, .y = 2},
-		{.x = 1, .y = 2},
-	};
-	p_j.shape = j_shape;
+
 	// L :: Orange {{{1
 	piece p_l = {
 		.color = ORANGE,
 		.bounds = 2,
-		.shape = malloc(sizeof(point) * 4)
+		.shape = {
+			{.x = 0, .y = 0},
+			{.x = 0, .y = 1},
+			{.x = 0, .y = 2},
+			{.x = 1, .y = 2},
+		}
 	};
-	point l_shape[4] = {
-		{.x = 0, .y = 0},
-		{.x = 0, .y = 1},
-		{.x = 0, .y = 2},
-		{.x = 1, .y = 2},
-	};
-	p_l.shape = l_shape;
+
 
 	///}}}1
 
