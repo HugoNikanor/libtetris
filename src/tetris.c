@@ -2,11 +2,18 @@
 #include <stdio.h>
 #include <unistd.h> // usleep
 #include <string.h>
+#include <signal.h>
 
 #include "tetris.h"
 
 color* _g_board;
 bool _g_board_live;
+
+volatile int running = 1;
+
+void end_loop(int signal) {
+	running = 0;
+}
 
 bool piece_invalid(piece* piece, point pos, int width, color board[][width]) {
 	for (int i = 0; i < 4; i++) {
@@ -258,7 +265,10 @@ void game_loop(const tetris_settings* settings) {
 	//piece pieces[7] = {p_o, p_o, p_o, p_o, p_o, p_o, p_o};
 	//piece pieces[10] = {p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i};
 	piece* piece = pieces;
-	for (int loop = 0;; loop++) {
+
+	signal(SIGINT, end_loop);
+
+	for (int loop = 0; running; loop++) {
 		if (loop % dropspeed == 0) {
 			pos.y++;
 		}
