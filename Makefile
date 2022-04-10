@@ -1,23 +1,28 @@
 .PHONY: all clean test
 
-CC=gcc
-CFLAGS=-std=c99 -Wall -fPIC -pthread -pedantic -D_XOPEN_SOURCE=600
+LIBS=sdl2
+CFLAGS=-std=c99 -Wall -fPIC -pthread -pedantic -D_XOPEN_SOURCE=600 \
+	   $(shell pkg-config --cflags $(LIBS))
 DEBUGFLAGS=-ggdb
-LIBS=-lm
+LDLIBS=-lm $(shell pkg-config --libs $(LIBS))
 C_FILES := $(wildcard src/*.c)
-O_FILES := $(addprefix obj/,$(notdir $(C_FILES:.c=.o)))
+# O_FILES := $(addprefix obj/,$(notdir $(C_FILES:.c=.o)))
 
-all : tetris libtetris.a libtetris.so
+all : tetris sdl_tetris libtetris.a libtetris.so
 
 obj/%.o: src/%.c
 	-@mkdir -p obj
 	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) -o $@ $<
 
-tetris : $(O_FILES)
-	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+
+tetris: obj/main.o obj/graphics.o obj/tetris.o
+	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
+
+sdl_tetris: obj/sdl_main.o obj/graphics.o obj/tetris.o
+	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
 libtetris.so: obj/tetris.o
-	$(CC) $^ -shared -o $@
+	$(CC) $^ -shared -o $@ $(LDLIBS)
 
 libtetris.a : obj/tetris.o
 	ar rcs $@ $^
