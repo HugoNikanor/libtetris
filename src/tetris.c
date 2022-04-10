@@ -2,8 +2,18 @@
 #include <stdio.h>
 #include <unistd.h> // usleep
 #include <string.h>
+#include <signal.h>
 
 #include "tetris.h"
+
+color* _g_board;
+bool _g_board_live;
+
+volatile int running = 1;
+
+void end_loop(int signal) {
+	running = 0;
+}
 
 bool piece_invalid(piece* piece, point pos, int width, color board[][width]) {
 	for (int i = 0; i < 4; i++) {
@@ -134,12 +144,7 @@ void game_loop(const tetris_settings* settings) {
 
 	// the extra height is for collision at the bottom
 	//color board[height + 1][width];
-	_g_board = malloc((height + 1) *sizeof(color*));
-	for (int i = 0; i < height + 1; i++) {
-		_g_board[i] = malloc(width*sizeof(color));
-		if (_g_board[i] == NULL)
-			return;
-	}
+	_g_board = malloc((height + 1) * width * sizeof(color));
 
 	_g_board_live = true;
 
@@ -161,100 +166,91 @@ void game_loop(const tetris_settings* settings) {
 		.color = CYAN,
 		.bounds = 3,
 		.rotation = 0,
-		.shape = malloc(sizeof(point) * 4)
+		.shape = {
+			{.x = 0, .y = 1},
+			{.x = 1, .y = 1},
+			{.x = 2, .y = 1},
+			{.x = 3, .y = 1},
+		}
 	};
-	point i_shape[4] = {
-		{.x = 0, .y = 1},
-		{.x = 1, .y = 1},
-		{.x = 2, .y = 1},
-		{.x = 3, .y = 1},
-	};
-	p_i.shape = i_shape;
 
 	// O :: Yellow {{{1
 	piece p_o = {
 		.color = YELLOW,
 		.bounds = 1,
 		.rotation = 0,
-		.shape = malloc(sizeof(point) * 4)
+		.shape = {
+			{.x = 0, .y = 0},
+			{.x = 0, .y = 1},
+			{.x = 1, .y = 0},
+			{.x = 1, .y = 1},
+		}
 	};
-	point o_shape[4] = {
-		{.x = 0, .y = 0},
-		{.x = 0, .y = 1},
-		{.x = 1, .y = 0},
-		{.x = 1, .y = 1},
-	};
-	p_o.shape = o_shape;
 
 	// T :: Magenta {{{1
 	piece p_t = {
 		.color = MAGENTA,
 		.bounds = 2,
 		.rotation = 0,
-		.shape = malloc(sizeof(point) * 4)
+		.shape = {
+			{.x = 0, .y = 0},
+			{.x = 1, .y = 0},
+			{.x = 2, .y = 0},
+			{.x = 1, .y = 1},
+		}
 	};
-	point t_shape[4] = {
-		{.x = 0, .y = 0},
-		{.x = 1, .y = 0},
-		{.x = 2, .y = 0},
-		{.x = 1, .y = 1},
-	};
-	p_t.shape = t_shape;
+
 	// S :: Green {{{1
 	piece p_s = {
 		.color = GREEN,
 		.bounds = 2,
 		.rotation = 0,
-		.shape = malloc(sizeof(point) * 4)
+		.shape = {
+			{.x = 0, .y = 0},
+			{.x = 0, .y = 1},
+			{.x = 1, .y = 1},
+			{.x = 1, .y = 2},
+		}
 	};
-	point s_shape[4] = {
-		{.x = 0, .y = 0},
-		{.x = 0, .y = 1},
-		{.x = 1, .y = 1},
-		{.x = 1, .y = 2},
-	};
-	p_s.shape = s_shape;
+
 	// Z :: Red {{{1
 	piece p_z = {
 		.color = RED,
 		.bounds = 2,
 		.rotation = 0,
-		.shape = malloc(sizeof(point) * 4)
+		.shape = {
+			{.x = 1, .y = 0},
+			{.x = 0, .y = 1},
+			{.x = 1, .y = 1},
+			{.x = 0, .y = 2},
+		}
 	};
-	point z_shape[4] = {
-		{.x = 1, .y = 0},
-		{.x = 0, .y = 1},
-		{.x = 1, .y = 1},
-		{.x = 0, .y = 2},
-	};
-	p_z.shape = z_shape;
+
 	// J :: Blue {{{1
 	piece p_j = {
 		.color = BLUE,
 		.bounds = 2,
 		.rotation = 0,
-		.shape = malloc(sizeof(point) * 4)
+		.shape = {
+			{.x = 2, .y = 0},
+			{.x = 2, .y = 1},
+			{.x = 2, .y = 2},
+			{.x = 1, .y = 2},
+		}
 	};
-	point j_shape[4] = {
-		{.x = 2, .y = 0},
-		{.x = 2, .y = 1},
-		{.x = 2, .y = 2},
-		{.x = 1, .y = 2},
-	};
-	p_j.shape = j_shape;
+
 	// L :: Orange {{{1
 	piece p_l = {
 		.color = ORANGE,
 		.bounds = 2,
-		.shape = malloc(sizeof(point) * 4)
+		.shape = {
+			{.x = 0, .y = 0},
+			{.x = 0, .y = 1},
+			{.x = 0, .y = 2},
+			{.x = 1, .y = 2},
+		}
 	};
-	point l_shape[4] = {
-		{.x = 0, .y = 0},
-		{.x = 0, .y = 1},
-		{.x = 0, .y = 2},
-		{.x = 1, .y = 2},
-	};
-	p_l.shape = l_shape;
+
 
 	///}}}1
 
@@ -269,7 +265,10 @@ void game_loop(const tetris_settings* settings) {
 	//piece pieces[7] = {p_o, p_o, p_o, p_o, p_o, p_o, p_o};
 	//piece pieces[10] = {p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i, p_i};
 	piece* piece = pieces;
-	for (int loop = 0;; loop++) {
+
+	signal(SIGINT, end_loop);
+
+	for (int loop = 0; running; loop++) {
 		if (loop % dropspeed == 0) {
 			pos.y++;
 		}
@@ -362,4 +361,11 @@ void game_loop(const tetris_settings* settings) {
 			board[pos.y + p.y][pos.x + p.x] = EMPTY;
 		}
 	}
+
+
+// cleanup:
+	/* TODO this causes a race condidion, since the render thread also
+	 * reads from _g_board.
+	 */
+	free(_g_board);
 }

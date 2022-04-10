@@ -38,6 +38,7 @@ void print_help() {
 		"-h         | Show this help\n");
 }
 
+
 int main(int argc, char* argv[]) {
 
 	// makes IO non-blocking
@@ -54,7 +55,7 @@ int main(int argc, char* argv[]) {
 	newt.c_lflag &= ~(ICANON | ECHO);
 	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 
-	// Sets up the thread
+	// Sets up the render thread
 	pthread_t cThread;
 	pthread_create(&cThread, NULL, draw_thread_func, NULL);
 
@@ -86,9 +87,22 @@ int main(int argc, char* argv[]) {
 		           : &move_manual
 	};
 
+	/* Hide Cursor */
+	printf("\x1b[?25l");
+
 	// Starts the game
 	game_loop (&settings);
 
 cleanup:
+	;
+	pthread_cancel(cThread);
+
+	/* Show cursor */
+	printf("\x1b[?25h");
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+
+	/* wait for thread to end before ending the program,
+	 * mostly so Valgrind doesn't think that we leak the
+	 * threads memory */
+	pthread_join(cThread, NULL);
 }

@@ -7,27 +7,27 @@ LIBS=-lm
 C_FILES := $(wildcard src/*.c)
 O_FILES := $(addprefix obj/,$(notdir $(C_FILES:.c=.o)))
 
-all : tetris libtetris.a
+all : tetris libtetris.a libtetris.so
 
-obj/%.o: src/%.c obj
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) -c -o $@ $<
-
-obj:
-	mkdir $@
+obj/%.o: src/%.c
+	-@mkdir -p obj
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) -o $@ $<
 
 tetris : $(O_FILES)
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) -o $@ $^ $(LIBS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
-#tetris.o : src/tetris.c
-#	$(CC) -c $(CFAGS) -o $@ $< $(LIBS)
+libtetris.so: obj/tetris.o
+	$(CC) $^ -shared -o $@
 
 libtetris.a : obj/tetris.o
-	ar rcs $@ $<
+	ar rcs $@ $^
 
 # TODO figure out how to auto compile test files
-# TODO Also figure out how to put shader files in own directory
+# TODO Also figure out how to put "shader" files in own directory
 
-clean: obj
+clean:
 	-rm obj/*.o
+	-rmdir obj
 	-rm libtetris.a
+	-rm libtetris.so
 	-rm tetris

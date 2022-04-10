@@ -15,7 +15,7 @@ typedef struct {
 	unsigned rotation : 2;
 	// the size of the bounding box of the piece - 1
 	int bounds;
-	point* shape; // list
+	point shape[4];
 } piece;
 
 typedef enum { LEFT, RIGHT } direction;
