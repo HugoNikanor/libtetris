@@ -13,13 +13,16 @@ obj/%.o: src/%.c
 tetris : $(O_FILES)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
-libtetris.a : tetris.o
+libtetris.so: obj/tetris.o
+	$(CC) $^ -shared -o $@
+
+libtetris.a : obj/tetris.o
 	ar rcs libtetris.a tetris.o
 
-all : tetris libtetris.a
+all : tetris libtetris.a libtetris.so
 
 # TODO figure out how to auto compile test files
-# TODO Also figure out how to put shader files in own directory
+# TODO Also figure out how to put "shader" files in own directory
 
 clean:
 	-rm obj/*.o
