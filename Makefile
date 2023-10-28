@@ -9,9 +9,21 @@ O_FILES := $(addprefix obj/,$(notdir $(C_FILES:.c=.o)))
 
 all : tetris libtetris.a libtetris.so
 
+include $(C_FILES:src/%.c=obj/%.d)
+
 obj/%.o: src/%.c
 	-@mkdir -p obj
 	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) -o $@ $<
+
+# Sed stuff to replace '%.o: ...' with 'obj/%.o obj/%.d ...'
+# See the GNU Makefile manual, Generating Prerequisites Automatically
+obj/%.d: src/%.c
+	-@mkdir -p obj
+	@set -e; \
+		rm -f $@; \
+		$(CC) -MM $(CPPFLAGS) $< > $@.$$$$; \
+		sed 's,\($*\)\.o[ :]*,obj/\1.o $@ : ,g' < $@.$$$$ > $@; \
+		rm -f $@.$$$$
 
 tetris : $(O_FILES)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
